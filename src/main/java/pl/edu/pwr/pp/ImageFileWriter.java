@@ -46,4 +46,38 @@ public class ImageFileWriter {
 			e.printStackTrace();
 		}
 	}
+	
+	public void saveToTxtFile(char[][] ascii, Path path) {
+		// np. korzystając z java.io.PrintWriter
+		// TODO Wasz kod
+		
+		if(!Files.exists(path))
+		{
+			try {
+				Files.createFile(path);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		
+		try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8, WRITE, CREATE, TRUNCATE_EXISTING)){
+			
+			int rows = ascii.length;
+			int columns = ascii[0].length;
+			
+			for(int y = 0; y < rows; y++)
+			{
+				for(int x = 0; x < columns; x++)
+					writer.write(ascii[y][x] + "\t");
+				
+				writer.write("\n");
+			}
+			
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }

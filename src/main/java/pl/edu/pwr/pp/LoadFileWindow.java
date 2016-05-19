@@ -12,16 +12,14 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.xml.transform.URIResolver;
 import javax.swing.JRadioButton;
-import java.awt.GridLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.JTextField;
 import java.awt.Insets;
-import java.awt.Point;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.Color;
@@ -30,14 +28,20 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.awt.Dialog.ModalExclusionType;
-import java.awt.Dialog.ModalityType;
-import java.awt.Dimension;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 public class LoadFileWindow extends JDialog {
 
+	/**
+	 * 
+	 */
+	//Dodane aby usunąć warning
+	private static final long serialVersionUID = 1L;
+	/**
+	 * 
+	 */
 	private final JPanel contentPanel = new JPanel();
 	private JTextField txtLocalAddress;
 	private JTextField txtUrlAddress;
@@ -126,10 +130,11 @@ public class LoadFileWindow extends JDialog {
 				JFileChooser chooser = new JFileChooser();
 				Component source =(Component) e.getSource();
 				
-				chooser.addChoosableFileFilter(new FileNameExtensionFilter("Images (*.pgm, *.jpg, *.png)", "pgm", "jpg", "png"));
+				chooser.addChoosableFileFilter(new FileNameExtensionFilter("Images (*.pgm)", "pgm"));
+				chooser.setAcceptAllFileFilterUsed(false);
 				
 				int return_val = chooser.showOpenDialog(source.getParent());
-				if(return_val == chooser.APPROVE_OPTION)
+				if(return_val == JFileChooser.APPROVE_OPTION)
 				{
 					File f = chooser.getSelectedFile();
 					txtLocalAddress.setText(f.getAbsolutePath());
@@ -189,8 +194,27 @@ public class LoadFileWindow extends JDialog {
 				}
 				else if(rdbtnLoadURL.isSelected())
 				{
-					path = txtUrlAddress.getText();
-					path_is_url = true;
+					int code = -1;
+					try {
+						URL url = new URL(txtUrlAddress.getText());
+						HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();
+				        urlConn.connect();
+				        code = urlConn.getResponseCode();
+				    } catch (IOException ex) {
+				        ex.printStackTrace();
+				    }
+					
+					if(code == HttpURLConnection.HTTP_OK)
+					{
+						path = txtUrlAddress.getText();
+						path_is_url = true;
+					}
+					else
+					{
+						Component source =(Component) e.getSource();
+						JOptionPane.showMessageDialog(source.getParent(), "Podany adres URL jest nieprawidłowy!", "Błąd", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
 				}
 				dispose();
 			}

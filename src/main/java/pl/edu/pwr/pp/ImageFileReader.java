@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Scanner;
 
 public class ImageFileReader {
 
@@ -86,6 +88,154 @@ public class ImageFileReader {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		return intensities;
+	}
+	
+	public int[][] readPgmFile(Path path) {
+		int columns = 0;
+		int rows = 0;
+		int[][] intensities = null;
+		
+		try (BufferedReader reader = Files.newBufferedReader(path)) {
+			// w kolejnych liniach kodu można / należy skorzystać z metody
+			String header = reader.readLine();
+
+			// pierwsza linijka pliku pgm powinna zawierać P2
+			if(!header.equals("P2"))
+				return null;
+			
+			// druga linijka pliku pgm powinna zawierać komentarz rozpoczynający
+			// się od #
+			header = reader.readLine();
+			if(header.charAt(0) != '#')
+				return null;
+			
+			// trzecia linijka pliku pgm powinna zawierać dwie liczby - liczbę
+			// kolumn i liczbę wierszy (w tej kolejności). Te wartości należy
+			// przypisać do zmiennych columns i rows.
+			String[] numbers = reader.readLine().split(" ");
+			columns = Integer.parseInt(numbers[0]);
+			rows = Integer.parseInt(numbers[1]);
+			
+			// czwarta linijka pliku pgm powinna zawierać 255 - najwyższą
+			// wartość odcienia szarości w pliku
+			if(Integer.parseInt(reader.readLine()) > 255)
+				return null;
+			
+			
+			// inicjalizacja tablicy na odcienie szarości
+			intensities = new int[rows][];
+
+			for (int i = 0; i < rows; i++) {
+				intensities[i] = new int[columns];
+			}
+
+			// kolejne linijki pliku pgm zawierają odcienie szarości kolejnych
+			// pikseli rozdzielone spacjami
+			String line = null;
+			int currentRow = 0;
+			int currentColumn = 0;
+			while ((line = reader.readLine()) != null) {
+				String[] elements = line.split(" ");
+				for (int i = 0; i < elements.length; i++) {
+					intensities[currentRow][currentColumn] = Integer.parseInt(elements[i]);
+					// currentRow i currentColumn są na początku równe zero.
+					// Należy je odpowiednio zwiększać, pamiętając o tym, żeby
+					// nie wyjść poza zakres tablicy. Plik pgm może mieć w
+					// wierszu dowolną ilość liczb, niekoniecznie równą liczbie
+					currentColumn++;
+					
+					if(currentColumn >= columns)
+					{
+						currentColumn = 0;
+						currentRow++;
+					}
+					
+					if(currentRow >= rows)
+					{
+						return intensities;
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return intensities;
+	}
+	
+	public int[][] readPgmFile(URL url) {
+		int columns = 0;
+		int rows = 0;
+		int[][] intensities = null;
+		
+		
+		
+		try (Scanner reader = new Scanner(url.openStream())) {
+			// w kolejnych liniach kodu można / należy skorzystać z metody
+			String header = reader.nextLine();
+
+			// pierwsza linijka pliku pgm powinna zawierać P2
+			if(!header.equals("P2"))
+				return null;
+			
+			// druga linijka pliku pgm powinna zawierać komentarz rozpoczynający
+			// się od #
+			header = reader.nextLine();
+			if(header.charAt(0) != '#')
+				return null;
+			
+			// trzecia linijka pliku pgm powinna zawierać dwie liczby - liczbę
+			// kolumn i liczbę wierszy (w tej kolejności). Te wartości należy
+			// przypisać do zmiennych columns i rows.
+			String[] numbers = reader.nextLine().split(" ");
+			columns = Integer.parseInt(numbers[0]);
+			rows = Integer.parseInt(numbers[1]);
+			
+			// czwarta linijka pliku pgm powinna zawierać 255 - najwyższą
+			// wartość odcienia szarości w pliku
+			if(Integer.parseInt(reader.nextLine()) > 255)
+				return null;
+			
+			
+			// inicjalizacja tablicy na odcienie szarości
+			intensities = new int[rows][];
+
+			for (int i = 0; i < rows; i++) {
+				intensities[i] = new int[columns];
+			}
+
+			// kolejne linijki pliku pgm zawierają odcienie szarości kolejnych
+			// pikseli rozdzielone spacjami
+			String line = null;
+			int currentRow = 0;
+			int currentColumn = 0;
+			while ((line = reader.nextLine()) != null) {
+				String[] elements = line.split(" ");
+				for (int i = 0; i < elements.length; i++) {
+					intensities[currentRow][currentColumn] = Integer.parseInt(elements[i]);
+					// currentRow i currentColumn są na początku równe zero.
+					// Należy je odpowiednio zwiększać, pamiętając o tym, żeby
+					// nie wyjść poza zakres tablicy. Plik pgm może mieć w
+					// wierszu dowolną ilość liczb, niekoniecznie równą liczbie
+					currentColumn++;
+					
+					if(currentColumn >= columns)
+					{
+						currentColumn = 0;
+						currentRow++;
+					}
+					
+					if(currentRow >= rows)
+					{
+						return intensities;
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
 		}
 		return intensities;
 	}
