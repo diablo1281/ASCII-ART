@@ -8,6 +8,7 @@ public class AsciiArtApplication {
 		
 		System.out.println("Program start...");
 		System.out.println();
+
 		
 		String[] images = new String[]{"Marilyn_Monroe", "Mona_Lisa", "Sierpinski_Triangle"};
 		String pgmExtension = ".pgm";
