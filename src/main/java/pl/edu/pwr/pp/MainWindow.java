@@ -26,6 +26,7 @@ public class MainWindow {
 	private Path save_path;
 	private int[][] intensities;
 	private BufferedImage image;
+	private Path last_path;
 
 	/**
 	 * Launch the application.
@@ -53,6 +54,7 @@ public class MainWindow {
 		intensities = null;
 		image = null;
 		save_path = null;
+		last_path = null;
 		initialize();
 	}
 
@@ -141,82 +143,27 @@ public class MainWindow {
 		btnFunction2.setEnabled(false);
 		menuBar.add(btnFunction2);
 		
-		
 		btnLoadImage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(LoadFile())
-				{				
-					if(path_is_url == false)
+				{	
+					System.out.println("Loading...");
+					if(!path_is_url)
 					{
-						Path file_path = Paths.get(path);
-						if(file_path.toString().endsWith(".pgm"))
-						{
-							ImageFileReader imageReader = new ImageFileReader();
-							intensities = imageReader.readPgmFile(file_path);
-							
-							if(intensities == null)
-							{
-								System.out.println("Błąd wczytania obrazu!");
-								JOptionPane.showMessageDialog(frame, "Błąd odczytu pliku PGM!", "Błąd", JOptionPane.ERROR_MESSAGE);
-								return;
-							}
-							
-							image = pgmToImage(intensities);
+						if(displayImageFromFile())
 							btnSaveImage.setEnabled(true);
-						}
 						else
-						{
-							try {
-								image = ImageIO.read(file_path.toFile());
-							} catch (IOException e1) {
-								e1.printStackTrace();
-							}
 							btnSaveImage.setEnabled(false);
-						}
-						
-						filename = file_path.getFileName().toString();
 					}
-					else if (path_is_url == true)
+					else
 					{
-						ImageFileReader imageReader = new ImageFileReader();
-						URL url = null;
-						try {
-							url = new URL(path);
-						} catch (MalformedURLException e1) {
-							e1.printStackTrace();
-							url = null;
-						}
-						if(url != null)
-						{
-							if(url.getFile().endsWith(".pgm"))
-							{
-								intensities = imageReader.readPgmFile(url);
-								
-								if(intensities == null)
-								{
-									System.out.println("Błąd wczytania obrazu!");
-									JOptionPane.showMessageDialog(frame, "Błąd odczytu pliku PGM!", "Błąd", JOptionPane.ERROR_MESSAGE);
-									return;
-								}
-								
-								image = pgmToImage(intensities);
-								btnSaveImage.setEnabled(true);
-							}
-							else
-							{
-								try {
-									image = ImageIO.read(url);
-								} catch (IOException e1) {
-									e1.printStackTrace();
-								}
-								btnSaveImage.setEnabled(false);
-							}
-							
-							filename = url.toString().substring( url.toString().lastIndexOf('/')+1, url.toString().length());
-						}
-						
+						if(displayImageFromURL())
+							btnSaveImage.setEnabled(true);
+						else
+							btnSaveImage.setEnabled(false);
 					}
-					
+
+					resizeImage(lblLoadedImage.getWidth(), lblLoadedImage.getHeight());
 					ImageIcon icon = new ImageIcon(image);
 					lblLoadedImage.setIcon(icon);
 					lblLoadedImage.setText("");
@@ -229,13 +176,14 @@ public class MainWindow {
 	public boolean LoadFile()
 	{
 		try {
-			LoadFileWindow dialog = new LoadFileWindow();
+			LoadFileWindow dialog = new LoadFileWindow(last_path);
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setResizable(false);
 			dialog.setVisible(true);
 			
 			path = dialog.getPath();
 			path_is_url = dialog.getPathType();
+			last_path = dialog.getLastPath();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -288,5 +236,110 @@ public class MainWindow {
 				raster.setSample(x, y, 0, intensities[y][x]);
 		
 		return image;
+	}
+	
+	public boolean displayImageFromFile()
+	{
+		boolean type = false;
+		
+		Path file_path = Paths.get(path);
+		if(file_path.toString().endsWith(".pgm"))
+		{
+			ImageFileReader imageReader = new ImageFileReader();
+			intensities = imageReader.readPgmFile(file_path);
+			
+			if(intensities == null)
+			{
+				System.out.println("Błąd wczytania obrazu!");
+				JOptionPane.showMessageDialog(frame, "Błąd odczytu pliku PGM!", "Błąd", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+			
+			image = pgmToImage(intensities);
+			
+			type = true;
+		}
+		else
+		{
+			try {
+				image = ImageIO.read(file_path.toFile());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			
+			type = false;
+		}
+		
+		filename = file_path.getFileName().toString();
+		
+		return type;
+	}
+	
+	public boolean displayImageFromURL()
+	{
+		boolean type = false;
+		
+		ImageFileReader imageReader = new ImageFileReader();
+		URL url = null;
+		try {
+			url = new URL(path);
+		} catch (MalformedURLException e1) {
+			e1.printStackTrace();
+			url = null;
+		}
+		if(url != null)
+		{
+			if(url.getFile().endsWith(".pgm"))
+			{
+				intensities = imageReader.readPgmFile(url);
+				
+				if(intensities == null)
+				{
+					System.out.println("Błąd wczytania obrazu!");
+					JOptionPane.showMessageDialog(frame, "Błąd odczytu pliku PGM!", "Błąd", JOptionPane.ERROR_MESSAGE);
+					return false;
+				}
+				
+				image = pgmToImage(intensities);
+				
+				type = true;
+			}
+			else
+			{
+				try {
+					image = ImageIO.read(url);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				
+				type = false;
+			}
+			
+			filename = url.toString().substring( url.toString().lastIndexOf('/')+1, url.toString().length());
+		}
+		
+		return type;
+	}
+	
+	public void resizeImage(int width, int height)
+	{
+        // Make sure the aspect ratio is maintained, so the image is not distorted
+        double thumbRatio = (double) width / (double) height;
+        int imageWidth = image.getWidth(null);
+        int imageHeight = image.getHeight(null);
+        double aspectRatio = (double) imageWidth / (double) imageHeight;
+        if (thumbRatio < aspectRatio) {
+            height = (int) (width / aspectRatio);
+        } else {
+            width = (int) (height * aspectRatio);
+        }
+        
+        BufferedImage resizeedImage = new BufferedImage(width, height, BufferedImage.TRANSLUCENT);
+        Graphics2D g2d = (Graphics2D) resizeedImage.createGraphics();
+        g2d.addRenderingHints(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY));
+        g2d.drawImage(image, 0, 0, width, height, null);
+        g2d.dispose();
+        
+        image = resizeedImage;
 	}
 }

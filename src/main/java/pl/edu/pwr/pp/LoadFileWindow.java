@@ -1,7 +1,7 @@
 package pl.edu.pwr.pp;
 
 import java.net.*;
-
+import java.nio.file.Path;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 
@@ -47,6 +47,7 @@ public class LoadFileWindow extends JDialog {
 	private JTextField txtUrlAddress;
 	private String path;
 	private boolean path_is_url;
+	private Path last_path;
 	/**
 	 * Launch the application.
 	 */
@@ -63,9 +64,10 @@ public class LoadFileWindow extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public LoadFileWindow() {
+	public LoadFileWindow(Path given_path) {
 		path = null;
 		path_is_url = false;
+		last_path = given_path;
 		
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -130,7 +132,11 @@ public class LoadFileWindow extends JDialog {
 				JFileChooser chooser = new JFileChooser();
 				Component source =(Component) e.getSource();
 				
-				chooser.addChoosableFileFilter(new FileNameExtensionFilter("Images (*.pgm)", "pgm"));
+				if(last_path != null)
+					chooser.setCurrentDirectory(last_path.toFile());
+				
+				chooser.addChoosableFileFilter(new FileNameExtensionFilter("PGM images (*.pgm)", "pgm"));
+				chooser.addChoosableFileFilter(new FileNameExtensionFilter("All other images (*.jpg, *.png, *.bmp, *.gif)", "jpg", "png", "bmp", "gif"));
 				chooser.setAcceptAllFileFilterUsed(false);
 				
 				int return_val = chooser.showOpenDialog(source.getParent());
@@ -139,6 +145,7 @@ public class LoadFileWindow extends JDialog {
 					File f = chooser.getSelectedFile();
 					txtLocalAddress.setText(f.getAbsolutePath());
 					rdbtnFromFile.setSelected(true);
+					last_path = chooser.getCurrentDirectory().toPath();
 				}
 				
 			}
@@ -241,6 +248,11 @@ public class LoadFileWindow extends JDialog {
 	public String getPath()
 	{
 		return path;
+	}
+	
+	public Path getLastPath()
+	{
+		return last_path;
 	}
 	
 	public boolean getPathType()
