@@ -48,18 +48,6 @@ public class LoadFileWindow extends JDialog {
 	private String path;
 	private boolean path_is_url;
 	private Path last_path;
-	/**
-	 * Launch the application.
-	 */
-	/*public static void main(String[] args) {
-		try {
-			LoadFileWindow dialog = new LoadFileWindow();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}*/
 
 	/**
 	 * Create the dialog.

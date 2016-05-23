@@ -2,6 +2,8 @@ package pl.edu.pwr.pp;
 
 import java.net.URISyntaxException;
 
+import pl.edu.pwr.pp.ImageConverter.ConvertType;
+
 public class AsciiArtApplication {
 
 	public static void main(String[] args) {
@@ -24,7 +26,7 @@ public class AsciiArtApplication {
 				int[][] intensities = imageFileReader.readPgmFile(imageName + pgmExtension);
 				// przekształć odcienie szarości do znaków ASCII
 				System.out.println("Konwersja pliku: " + imageName);
-				char[][] ascii = ImageConverter.intensitiesToAscii(intensities);
+				char[][] ascii = ImageConverter.intensitiesToAscii(intensities, ConvertType.Low);
 				// zapisz ASCII art do pliku tekstowego
 				System.out.println("Zapis pliku: " + imageName);
 				imageFileWriter.saveToTxtFile(ascii, imageName + txtExtension);

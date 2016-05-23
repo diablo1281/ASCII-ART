@@ -10,6 +10,9 @@ import javax.swing.GroupLayout.Alignment;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import pl.edu.pwr.pp.ImageConverter.ConvertType;
+import pl.edu.pwr.pp.ImageConverter.ScaleType;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -27,7 +30,12 @@ public class MainWindow {
 	private int[][] intensities;
 	private BufferedImage image;
 	private Path last_path;
+	private ConvertType conversion_type;
+	private ScaleType scale_type;
 
+	private ConvertType[] option1_list = {ConvertType.Low, ConvertType.High};
+	private ScaleType[] option2_list = {ScaleType.Signs_80, ScaleType.Signs_160, ScaleType.Screen_width, ScaleType.Not_scaled};
+	
 	/**
 	 * Launch the application.
 	 */
@@ -107,32 +115,29 @@ public class MainWindow {
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
 		
-		//Wczytaj obraz
 		JButton btnLoadImage = new JButton("Wczytaj obraz");
 		menuBar.add(btnLoadImage);
 		
-		
-		JCheckBox chckbxOption1 = new JCheckBox("(Reserved)");
-		chckbxOption1.setEnabled(false);
-		menuBar.add(chckbxOption1);
-		
-		JCheckBox chckbxOption2 = new JCheckBox("(Reserved)");
-		chckbxOption2.setEnabled(false);
-		menuBar.add(chckbxOption2);
-		
-		//Zapisz obraz
-		JButton btnSaveImage = new JButton("Zapisz obraz");
-		btnSaveImage.setEnabled(false);
-		btnSaveImage.addActionListener(new ActionListener() {
+		JComboBox<ConvertType> comboBoxOption1 = new JComboBox<ConvertType>(option1_list);
+		comboBoxOption1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(SaveFile())
-				{
-					JOptionPane.showMessageDialog(frame, "Plik został zpisany w: \n" + save_path, "Zapis pomyślny", JOptionPane.INFORMATION_MESSAGE);	
-				}
-				else
-					JOptionPane.showMessageDialog(frame, "Błąd zapisu pliku!", "Błąd", JOptionPane.ERROR_MESSAGE);
+				conversion_type = (ConvertType)comboBoxOption1.getSelectedItem();
 			}
 		});
+		comboBoxOption1.setSelectedIndex(0);
+		menuBar.add(comboBoxOption1);
+		
+		JComboBox<ScaleType> comboBoxOption2 = new JComboBox<ScaleType>(option2_list);
+		comboBoxOption1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				scale_type = (ScaleType)comboBoxOption2.getSelectedItem();
+			}
+		});
+		comboBoxOption2.setSelectedIndex(0);
+		menuBar.add(comboBoxOption2);
+		
+		JButton btnSaveImage = new JButton("Zapisz obraz");
+		btnSaveImage.setEnabled(false);
 		menuBar.add(btnSaveImage);
 		
 		JButton btnFunction1 = new JButton("(Reserve)");
@@ -143,6 +148,20 @@ public class MainWindow {
 		btnFunction2.setEnabled(false);
 		menuBar.add(btnFunction2);
 		
+		//Zapisz obraz
+		btnSaveImage.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(SaveFile())
+				{
+					JOptionPane.showMessageDialog(frame, "Plik został zpisany w: \n" + save_path, "Zapis pomyślny", JOptionPane.INFORMATION_MESSAGE);	
+				}
+				else
+					JOptionPane.showMessageDialog(frame, "Błąd zapisu pliku!", "Błąd", JOptionPane.ERROR_MESSAGE);
+			}
+		});
+		
+		
+		//Wczytaj obraz
 		btnLoadImage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(LoadFile())
@@ -210,7 +229,7 @@ public class MainWindow {
 				if(tmp.substring(tmp.length() - 4, tmp.length()) != ".txt")
 					tmp += ".txt";
 				save_path = Paths.get(tmp);
-				char[][] ascii = ImageConverter.intensitiesToAscii(intensities);
+				char[][] ascii = ImageConverter.intensitiesToAscii(intensities, conversion_type);
 				
 				imageWriter.saveToTxtFile(ascii, save_path);
 			}

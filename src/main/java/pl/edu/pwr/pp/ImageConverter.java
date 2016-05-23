@@ -1,12 +1,45 @@
 package pl.edu.pwr.pp;
 
+import java.awt.image.BufferedImage;
+import java.lang.reflect.Field;
+
 public class ImageConverter {
 
+	public enum ConvertType {
+		Low("Niska"), 
+		High("Wysoka");
+		
+		ConvertType(String name) {
+	        try {
+	            Field fieldName = getClass().getSuperclass().getDeclaredField("name");
+	            fieldName.setAccessible(true);
+	            fieldName.set(this, name);
+	            fieldName.setAccessible(false);
+	        } catch (Exception e) {}
+	    }
+	}
+	
+	public enum ScaleType {
+		Signs_80("80 znaków"), 
+		Signs_160("160 znaków"),
+		Screen_width("Szerokość ekranu"),
+		Not_scaled("Oryginał (bez skalowania)");
+		
+		ScaleType(String name) {
+	        try {
+	            Field fieldName = getClass().getSuperclass().getDeclaredField("name");
+	            fieldName.setAccessible(true);
+	            fieldName.set(this, name);
+	            fieldName.setAccessible(false);
+	        } catch (Exception e) {}
+	    }
+	}
 	/**
 	 * Znaki odpowiadające kolejnym poziomom odcieni szarości - od czarnego (0)
 	 * do białego (255).
 	 */
-	public static String INTENSITY_2_ASCII = "@%#*+=-:. ";
+	private static String INTENSITY_2_ASCII_10 = "@%#*+=-:. ";
+	private static String INTENSITY_2_ASCII_70 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
 
 	/**
 	 * Metoda zwraca znak odpowiadający danemu odcieniowi szarości. Odcienie
@@ -20,31 +53,12 @@ public class ImageConverter {
 	 *            odcień szarości w zakresie od 0 do 255
 	 * @return znak odpowiadający zadanemu odcieniowi szarości
 	 */
-	public static char IntToAscii(int intensity) {
-		char sign = 0;
-
-		if(intensity >= 0 && intensity <= 25)
-			sign = INTENSITY_2_ASCII.charAt(0);
-		else if(intensity >= 26 && intensity <= 51)
-			sign = INTENSITY_2_ASCII.charAt(1);
-		else if(intensity >= 52 && intensity <= 76)
-			sign = INTENSITY_2_ASCII.charAt(2);
-		else if(intensity >= 77 && intensity <= 102)
-			sign = INTENSITY_2_ASCII.charAt(3);
-		else if(intensity >= 103 && intensity <= 127)
-			sign = INTENSITY_2_ASCII.charAt(4);
-		else if(intensity >= 128 && intensity <= 153)
-			sign = INTENSITY_2_ASCII.charAt(5);
-		else if(intensity >= 154 && intensity <= 179)
-			sign = INTENSITY_2_ASCII.charAt(6);
-		else if(intensity >= 180 && intensity <= 204)
-			sign = INTENSITY_2_ASCII.charAt(7);
-		else if(intensity >= 205 && intensity <= 230)
-			sign = INTENSITY_2_ASCII.charAt(8);
-		else if(intensity >= 231 && intensity <= 255)
-			sign = INTENSITY_2_ASCII.charAt(9);
-		
-		return sign;
+	public static char IntToAsciiLow(int intensity) {
+		return INTENSITY_2_ASCII_10.charAt((int)(intensity / 25.6));
+	}
+	
+	public static char IntToAsciiHigh(int intensity) {
+		return INTENSITY_2_ASCII_70.charAt((int)(intensity / 3.6571));
 	}
 
 	/**
@@ -54,9 +68,12 @@ public class ImageConverter {
 	 * 
 	 * @param intensities
 	 *            tablica odcieni szarości obrazu
+	 *            
+	 * @param type
+	 * 			  określa zakres konwersji 0 - LOW, 1 - HIGH
 	 * @return tablica znaków ASCII
 	 */
-	public static char[][] intensitiesToAscii(int[][] intensities) {
+	public static char[][] intensitiesToAscii(int[][] intensities, ConvertType type) {
 		
 		int rows = intensities.length;
 		int columns = intensities[0].length;
@@ -70,11 +87,23 @@ public class ImageConverter {
 		}
 		
 		for(int y = 0; y < rows; y++)
-			for(int x = 0; x < columns; x++)				
-				ascii[y][x] = IntToAscii(intensities[y][x]);
+			for(int x = 0; x < columns; x++)
+			{
+				if(type == ConvertType.Low)
+					ascii[y][x] = IntToAsciiLow(intensities[y][x]);
+				else
+					ascii[y][x] = IntToAsciiHigh(intensities[y][x]);
+			}
 
 		
 		return ascii;
 	}
-
+	
+	/*public BufferedImage convertFromRGBToGrey(BufferedImage image)
+	{
+		BufferedImage gray_image = new BufferdImage();
+		
+		return gray_image;
+	}
+*/
 }
