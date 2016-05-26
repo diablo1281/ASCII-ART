@@ -64,7 +64,7 @@ public class LoadFileWindow extends JDialog {
 		setAlwaysOnTop(true);
 		setBounds(100, 100, 589, 234);
 		getContentPane().setLayout(new BorderLayout());
-		contentPanel.setBackground(Color.PINK);
+		contentPanel.setBackground(Color.GREEN);
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
@@ -85,7 +85,7 @@ public class LoadFileWindow extends JDialog {
 	
 	
 		JRadioButton rdbtnFromFile = new JRadioButton("z dysku lokalnego");
-		rdbtnFromFile.setBackground(Color.PINK);
+		rdbtnFromFile.setBackground(Color.GREEN);
 		rdbtnFromFile.setSelected(true);
 		rdbtnFromFile.setHorizontalAlignment(SwingConstants.LEFT);
 		GridBagConstraints gbc_rdbtnFromFile = new GridBagConstraints();
@@ -103,7 +103,7 @@ public class LoadFileWindow extends JDialog {
 				rdbtnFromFile.setSelected(true);
 			}
 		});
-		txtLocalAddress.setBackground(Color.CYAN);
+		txtLocalAddress.setBackground(Color.LIGHT_GRAY);
 		txtLocalAddress.setEditable(false);
 		GridBagConstraints gbc_txtLocalAddress = new GridBagConstraints();
 		gbc_txtLocalAddress.insets = new Insets(0, 0, 5, 5);
@@ -147,7 +147,7 @@ public class LoadFileWindow extends JDialog {
 	
 	
 		JRadioButton rdbtnLoadURL = new JRadioButton("z adresu URL");
-		rdbtnLoadURL.setBackground(Color.PINK);
+		rdbtnLoadURL.setBackground(Color.GREEN);
 		GridBagConstraints gbc_rdbtnLoadURL = new GridBagConstraints();
 		gbc_rdbtnLoadURL.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnLoadURL.insets = new Insets(0, 0, 5, 5);
@@ -163,7 +163,7 @@ public class LoadFileWindow extends JDialog {
 				rdbtnLoadURL.setSelected(true);
 			}
 		});
-		txtUrlAddress.setBackground(Color.CYAN);
+		txtUrlAddress.setBackground(Color.WHITE);
 		txtUrlAddress.setToolTipText("Wprowadz adres URL obrazka");
 		GridBagConstraints gbc_txtUrlAddress = new GridBagConstraints();
 		gbc_txtUrlAddress.insets = new Insets(0, 0, 0, 5);
@@ -175,7 +175,7 @@ public class LoadFileWindow extends JDialog {
 		
 		
 		JPanel buttonPane = new JPanel();
-		buttonPane.setBackground(Color.PINK);
+		buttonPane.setBackground(Color.GREEN);
 		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		getContentPane().add(buttonPane, BorderLayout.SOUTH);
 		

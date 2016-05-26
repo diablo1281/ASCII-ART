@@ -1,6 +1,12 @@
 package pl.edu.pwr.pp;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.lang.reflect.Field;
 
 public class ImageConverter {
@@ -54,11 +60,11 @@ public class ImageConverter {
 	 * @return znak odpowiadający zadanemu odcieniowi szarości
 	 */
 	public static char IntToAsciiLow(int intensity) {
-		return INTENSITY_2_ASCII_10.charAt((int)(intensity / 25.6));
+		return INTENSITY_2_ASCII_10.charAt((INTENSITY_2_ASCII_10.length() - 1) - (int)(intensity / 25.6));
 	}
 	
 	public static char IntToAsciiHigh(int intensity) {
-		return INTENSITY_2_ASCII_70.charAt((int)(intensity / 3.6571));
+		return INTENSITY_2_ASCII_70.charAt((INTENSITY_2_ASCII_70.length() - 1) - (int)(intensity / 3.6571));
 	}
 
 	/**
@@ -70,7 +76,7 @@ public class ImageConverter {
 	 *            tablica odcieni szarości obrazu
 	 *            
 	 * @param type
-	 * 			  określa zakres konwersji 0 - LOW, 1 - HIGH
+	 * 			  określa zakres konwersji LOW - 10 znaków, HIGH - 70 znaków
 	 * @return tablica znaków ASCII
 	 */
 	public static char[][] intensitiesToAscii(int[][] intensities, ConvertType type) {
@@ -99,11 +105,97 @@ public class ImageConverter {
 		return ascii;
 	}
 	
-	/*public BufferedImage convertFromRGBToGrey(BufferedImage image)
+	public static BufferedImage convertFromRGBToGrey(BufferedImage image)
 	{
-		BufferedImage gray_image = new BufferdImage();
+		BufferedImage gray_image = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+		WritableRaster raster = gray_image.getRaster();
+		
+		for(int y = 0; y < image.getHeight(); y++)
+		{
+			for(int x = 0; x < image.getWidth(); x++)
+			{
+				Color color = new Color(image.getRGB(x, y));
+				raster.setSample(x, y, 0, (int)((0.2989 * color.getRed()) + (0.5870 * color.getGreen()) + (0.1140 * color.getBlue())));
+			}
+		}
 		
 		return gray_image;
 	}
-*/
+
+	public static BufferedImage resizeImage(BufferedImage image, int width, int height)
+	{
+        double thumbRatio = (double) width / (double) height;
+        int imageWidth = image.getWidth(null);
+        int imageHeight = image.getHeight(null);
+        double aspectRatio = (double) imageWidth / (double) imageHeight;
+        if (thumbRatio < aspectRatio) {
+            height = (int) (width / aspectRatio);
+        } else {
+            width = (int) (height * aspectRatio);
+        }
+        
+        BufferedImage resizeedImage = new BufferedImage(width, height, BufferedImage.TRANSLUCENT);
+        Graphics2D g2d = (Graphics2D) resizeedImage.createGraphics();
+        g2d.addRenderingHints(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY));
+        g2d.drawImage(image, 0, 0, width, height, null);
+        g2d.dispose();
+        
+        return resizeedImage;
+	}
+	
+	public static BufferedImage resizeImage(BufferedImage image, int org_width, int org_heigth, ScaleType scale)
+	{
+		BufferedImage result = null;
+		int heigth = 0;
+		int width = 0;
+		double org_ratio = (double) org_heigth /  (double) org_width;
+		
+		switch (scale) {
+		case Signs_80:
+			width = 80;
+			heigth = (int)(org_ratio * (double) width);
+			break;
+			
+		case Signs_160:
+			width = 160;
+			heigth = (int)(org_ratio * (double) width);
+			break;
+
+		case Screen_width:
+			Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+			width = (int) screenSize.getWidth();
+			heigth = (int)(org_ratio * (double) width);
+			break;	
+		
+		case Not_scaled:
+			heigth = org_heigth;
+			width = org_width;
+			
+		default:
+			break;
+		}
+		
+		result = resizeImage(image, width, heigth);
+
+		return result;
+	}
+	
+	public static int[][] writeIntensities(BufferedImage image)
+	{
+		int[][] intensities = null;
+		intensities = new int[image.getHeight()][];
+
+		for (int i = 0; i < image.getHeight(); i++) {
+			intensities[i] = new int[image.getWidth()];
+		}
+
+		for(int y = 0; y < image.getHeight(); y++)
+			for(int x = 0; x < image.getWidth(); x++)
+			{
+				Color color = new Color(image.getRGB(x, y));
+				intensities[y][x] = color.getRed();
+			}
+		
+		return intensities;
+	}
 }

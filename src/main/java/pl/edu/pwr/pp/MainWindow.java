@@ -15,6 +15,7 @@ import pl.edu.pwr.pp.ImageConverter.ScaleType;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.awt.event.ActionListener;
@@ -32,6 +33,7 @@ public class MainWindow {
 	private Path last_path;
 	private ConvertType conversion_type;
 	private ScaleType scale_type;
+	private int org_width, org_heigth;
 
 	private ConvertType[] option1_list = {ConvertType.Low, ConvertType.High};
 	private ScaleType[] option2_list = {ScaleType.Signs_80, ScaleType.Signs_160, ScaleType.Screen_width, ScaleType.Not_scaled};
@@ -118,22 +120,26 @@ public class MainWindow {
 		JButton btnLoadImage = new JButton("Wczytaj obraz");
 		menuBar.add(btnLoadImage);
 		
-		JComboBox<ConvertType> comboBoxOption1 = new JComboBox<ConvertType>(option1_list);
+		DefaultComboBoxModel<ConvertType> comboConvertTypeModel = new DefaultComboBoxModel<ConvertType>(option1_list);
+		JComboBox<ConvertType> comboBoxOption1 = new JComboBox<ConvertType>(comboConvertTypeModel);
 		comboBoxOption1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				conversion_type = (ConvertType)comboBoxOption1.getSelectedItem();
 			}
 		});
 		comboBoxOption1.setSelectedIndex(0);
+		conversion_type = (ConvertType)comboBoxOption1.getSelectedItem();
 		menuBar.add(comboBoxOption1);
 		
-		JComboBox<ScaleType> comboBoxOption2 = new JComboBox<ScaleType>(option2_list);
-		comboBoxOption1.addActionListener(new ActionListener() {
+		DefaultComboBoxModel<ScaleType> comboScaleTypeModel = new DefaultComboBoxModel<ScaleType>(option2_list);
+		JComboBox<ScaleType> comboBoxOption2 = new JComboBox<ScaleType>(comboScaleTypeModel);
+		comboBoxOption2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				scale_type = (ScaleType)comboBoxOption2.getSelectedItem();
 			}
 		});
 		comboBoxOption2.setSelectedIndex(0);
+		scale_type = (ScaleType)comboBoxOption2.getSelectedItem();
 		menuBar.add(comboBoxOption2);
 		
 		JButton btnSaveImage = new JButton("Zapisz obraz");
@@ -152,11 +158,7 @@ public class MainWindow {
 		btnSaveImage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(SaveFile())
-				{
-					JOptionPane.showMessageDialog(frame, "Plik został zpisany w: \n" + save_path, "Zapis pomyślny", JOptionPane.INFORMATION_MESSAGE);	
-				}
-				else
-					JOptionPane.showMessageDialog(frame, "Błąd zapisu pliku!", "Błąd", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(frame, "Plik został zpisany w: \n" + save_path, "Zapis pomyślny", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 		
@@ -168,25 +170,19 @@ public class MainWindow {
 				{	
 					System.out.println("Loading...");
 					if(!path_is_url)
-					{
-						if(displayImageFromFile())
-							btnSaveImage.setEnabled(true);
-						else
-							btnSaveImage.setEnabled(false);
-					}
+						displayImageFromFile();
 					else
-					{
-						if(displayImageFromURL())
-							btnSaveImage.setEnabled(true);
-						else
-							btnSaveImage.setEnabled(false);
-					}
-
-					resizeImage(lblLoadedImage.getWidth(), lblLoadedImage.getHeight());
-					ImageIcon icon = new ImageIcon(image);
+						displayImageFromURL();
+					
+					org_width = image.getWidth();
+					org_heigth = image.getHeight();
+					
+					ImageIcon icon = new ImageIcon(ImageConverter.resizeImage(image, lblLoadedImage.getWidth(), lblLoadedImage.getHeight()));
 					lblLoadedImage.setIcon(icon);
 					lblLoadedImage.setText("");
 					lblImageName.setText(filename);
+					
+					btnSaveImage.setEnabled(true);
 				}
 			}
 		});
@@ -213,32 +209,64 @@ public class MainWindow {
 	}
 	
 	public boolean SaveFile()
-	{
-		JFileChooser chooser = new JFileChooser();
-		
-		chooser.addChoosableFileFilter(new FileNameExtensionFilter("ASCI-ART (*.txt)", "txt"));
-		chooser.setAcceptAllFileFilterUsed(false);
-		
-		int return_val = chooser.showSaveDialog(frame);
-		if(return_val == JFileChooser.APPROVE_OPTION)
+	{	
+		while(true)
 		{
-			if(intensities != null)
-			{
-				ImageFileWriter imageWriter = new ImageFileWriter();
-				String tmp = chooser.getSelectedFile().getPath();
-				if(tmp.substring(tmp.length() - 4, tmp.length()) != ".txt")
-					tmp += ".txt";
-				save_path = Paths.get(tmp);
-				char[][] ascii = ImageConverter.intensitiesToAscii(intensities, conversion_type);
-				
-				imageWriter.saveToTxtFile(ascii, save_path);
-			}
-			else
-
-				return false;
+			JFileChooser chooser = new JFileChooser();
 			
+			if(last_path != null)
+				chooser.setCurrentDirectory(last_path.toFile());
+	
+			chooser.setFileFilter(new FileNameExtensionFilter("ASCII_ART (*.nfo)", "nfo"));
+			chooser.addChoosableFileFilter(new FileNameExtensionFilter("Text file (*.txt)", "txt"));
+			chooser.setAcceptAllFileFilterUsed(false);
+			
+			int return_val = chooser.showSaveDialog(frame);
+			if(return_val == JFileChooser.APPROVE_OPTION)
+			{
+				String tmp = chooser.getSelectedFile().getPath();
+				String extension = "." + ((FileNameExtensionFilter)(chooser.getFileFilter())).getExtensions()[0];
+				if(!tmp.endsWith(extension))
+					tmp += extension;
+				
+				save_path = Paths.get(tmp);
+				last_path = chooser.getCurrentDirectory().toPath();
+				
+				if(Files.exists(save_path))
+				{
+					int answer = JOptionPane.showConfirmDialog(frame,"Plik o podanej nazwie istnieje.\nCzy chcesz nadpisać plik?","Ostrzeżenie przed nadpisaniem",JOptionPane.YES_NO_OPTION);
+					switch (answer) {
+					case JOptionPane.YES_OPTION:
+						break;
+						
+					case JOptionPane.NO_OPTION:
+						continue;
+						
+					case JOptionPane.CLOSED_OPTION:
+						return false;
+					}
+				}
+				
+				
+				ImageFileWriter imageWriter = new ImageFileWriter();
+				BufferedImage img_to_save;
+				
+				if(image.getType() != BufferedImage.TYPE_BYTE_GRAY)
+					img_to_save = ImageConverter.convertFromRGBToGrey(image);
+				else
+					img_to_save = image;
+				
+				img_to_save = ImageConverter.resizeImage(img_to_save, org_width, org_heigth, scale_type);
+				intensities = ImageConverter.writeIntensities(img_to_save);
+				
+				char[][] ascii = ImageConverter.intensitiesToAscii(intensities, conversion_type);
+				imageWriter.saveToTxtFile(ascii, save_path);
+				
+				return true;
+			}
+				
+			return false;
 		}
-		return true;
 	}
 	
 	public BufferedImage pgmToImage(int intensities[][])
@@ -334,31 +362,9 @@ public class MainWindow {
 				type = false;
 			}
 			
-			filename = url.toString().substring( url.toString().lastIndexOf('/')+1, url.toString().length());
+			filename = url.toString().substring( url.toString().lastIndexOf('/') + 1, url.toString().length());
 		}
 		
 		return type;
-	}
-	
-	public void resizeImage(int width, int height)
-	{
-        // Make sure the aspect ratio is maintained, so the image is not distorted
-        double thumbRatio = (double) width / (double) height;
-        int imageWidth = image.getWidth(null);
-        int imageHeight = image.getHeight(null);
-        double aspectRatio = (double) imageWidth / (double) imageHeight;
-        if (thumbRatio < aspectRatio) {
-            height = (int) (width / aspectRatio);
-        } else {
-            width = (int) (height * aspectRatio);
-        }
-        
-        BufferedImage resizeedImage = new BufferedImage(width, height, BufferedImage.TRANSLUCENT);
-        Graphics2D g2d = (Graphics2D) resizeedImage.createGraphics();
-        g2d.addRenderingHints(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY));
-        g2d.drawImage(image, 0, 0, width, height, null);
-        g2d.dispose();
-        
-        image = resizeedImage;
 	}
 }

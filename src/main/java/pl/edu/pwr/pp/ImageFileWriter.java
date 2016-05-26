@@ -69,7 +69,7 @@ public class ImageFileWriter {
 			for(int y = 0; y < rows; y++)
 			{
 				for(int x = 0; x < columns; x++)
-					writer.write(ascii[y][x] + "\t");
+					writer.write(ascii[y][x] + "");
 				
 				writer.write("\n");
 			}
