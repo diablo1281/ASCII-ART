@@ -60,11 +60,11 @@ public class ImageConverter {
 	 * @return znak odpowiadający zadanemu odcieniowi szarości
 	 */
 	public static char IntToAsciiLow(int intensity) {
-		return INTENSITY_2_ASCII_10.charAt((INTENSITY_2_ASCII_10.length() - 1) - (int)(intensity / 25.6));
+		return INTENSITY_2_ASCII_10.charAt((INTENSITY_2_ASCII_10.length() - 1) - (int)((double) intensity / (double)((double) 256 / (double) INTENSITY_2_ASCII_10.length())));
 	}
 	
 	public static char IntToAsciiHigh(int intensity) {
-		return INTENSITY_2_ASCII_70.charAt((INTENSITY_2_ASCII_70.length() - 1) - (int)(intensity / 3.6571));
+		return INTENSITY_2_ASCII_70.charAt((INTENSITY_2_ASCII_70.length() - 1) - (int)((double) intensity / (double)((double) 256 / (double) INTENSITY_2_ASCII_70.length())));
 	}
 
 	/**
@@ -111,13 +111,11 @@ public class ImageConverter {
 		WritableRaster raster = gray_image.getRaster();
 		
 		for(int y = 0; y < image.getHeight(); y++)
-		{
 			for(int x = 0; x < image.getWidth(); x++)
 			{
 				Color color = new Color(image.getRGB(x, y));
 				raster.setSample(x, y, 0, (int)((0.2989 * color.getRed()) + (0.5870 * color.getGreen()) + (0.1140 * color.getBlue())));
 			}
-		}
 		
 		return gray_image;
 	}
@@ -143,12 +141,12 @@ public class ImageConverter {
         return resizeedImage;
 	}
 	
-	public static BufferedImage resizeImage(BufferedImage image, int org_width, int org_heigth, ScaleType scale)
+	public static BufferedImage resizeImage(BufferedImage image, ScaleType scale)
 	{
 		BufferedImage result = null;
-		int heigth = 0;
-		int width = 0;
-		double org_ratio = (double) org_heigth /  (double) org_width;
+		int heigth = image.getHeight();
+		int width = image.getWidth();
+		double org_ratio = (double) heigth /  (double) width;
 		
 		switch (scale) {
 		case Signs_80:
@@ -168,8 +166,7 @@ public class ImageConverter {
 			break;	
 		
 		case Not_scaled:
-			heigth = org_heigth;
-			width = org_width;
+			return image;
 			
 		default:
 			break;

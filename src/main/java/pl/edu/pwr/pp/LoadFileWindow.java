@@ -182,12 +182,12 @@ public class LoadFileWindow extends JDialog {
 		JButton okButton = new JButton("OK");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(rdbtnFromFile.isSelected())
+				if(rdbtnFromFile.isSelected() && !txtLocalAddress.getText().isEmpty())
 				{
 					path = txtLocalAddress.getText();
 					path_is_url = false;
 				}
-				else if(rdbtnLoadURL.isSelected())
+				else if(rdbtnLoadURL.isSelected() && !txtUrlAddress.getText().isEmpty())
 				{
 					int code = -1;
 					try {

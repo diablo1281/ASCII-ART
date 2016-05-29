@@ -33,7 +33,6 @@ public class MainWindow {
 	private Path last_path;
 	private ConvertType conversion_type;
 	private ScaleType scale_type;
-	private int org_width, org_heigth;
 
 	private ConvertType[] option1_list = {ConvertType.Low, ConvertType.High};
 	private ScaleType[] option2_list = {ScaleType.Signs_80, ScaleType.Signs_160, ScaleType.Screen_width, ScaleType.Not_scaled};
@@ -174,9 +173,6 @@ public class MainWindow {
 					else
 						displayImageFromURL();
 					
-					org_width = image.getWidth();
-					org_heigth = image.getHeight();
-					
 					ImageIcon icon = new ImageIcon(ImageConverter.resizeImage(image, lblLoadedImage.getWidth(), lblLoadedImage.getHeight()));
 					lblLoadedImage.setIcon(icon);
 					lblLoadedImage.setText("");
@@ -256,7 +252,7 @@ public class MainWindow {
 				else
 					img_to_save = image;
 				
-				img_to_save = ImageConverter.resizeImage(img_to_save, org_width, org_heigth, scale_type);
+				img_to_save = ImageConverter.resizeImage(img_to_save, scale_type);
 				intensities = ImageConverter.writeIntensities(img_to_save);
 				
 				char[][] ascii = ImageConverter.intensitiesToAscii(intensities, conversion_type);
