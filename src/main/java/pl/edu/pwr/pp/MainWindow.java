@@ -20,10 +20,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 public class MainWindow {
 
-	private JFrame frame;
+	private JFrame frmAsciiart;
 	private String path;
 	private String filename;
 	private boolean path_is_url;
@@ -33,9 +35,10 @@ public class MainWindow {
 	private Path last_path;
 	private ConvertType conversion_type;
 	private ScaleType scale_type;
+	private int custom_width;
 
-	private ConvertType[] option1_list = {ConvertType.Low, ConvertType.High};
-	private ScaleType[] option2_list = {ScaleType.Signs_80, ScaleType.Signs_160, ScaleType.Screen_width, ScaleType.Not_scaled};
+	private ConvertType[] option1_list = {ConvertType.Low, ConvertType.LowNegativ, ConvertType.High, ConvertType.HighNegative};
+	private ScaleType[] option2_list = {ScaleType.Signs_80, ScaleType.Signs_160, ScaleType.Screen_width, ScaleType.Not_scaled, ScaleType.Custom};
 	
 	/**
 	 * Launch the application.
@@ -45,7 +48,7 @@ public class MainWindow {
 			public void run() {
 				try {
 					MainWindow window = new MainWindow();
-					window.frame.setVisible(true);
+					window.frmAsciiart.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -72,14 +75,20 @@ public class MainWindow {
 	 */
 	
 	private void initialize() {
-		frame = new JFrame();
-		frame.getContentPane().setForeground(Color.WHITE);
-		frame.getContentPane().setBackground(Color.DARK_GRAY);
-		frame.setResizable(false);
+		frmAsciiart = new JFrame();
+		frmAsciiart.setTitle("ASCII-ART");
+		try {
+			frmAsciiart.setIconImage(ImageIO.read(ClassLoader.getSystemResource("aplication_icon.png")));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		frmAsciiart.getContentPane().setForeground(Color.WHITE);
+		frmAsciiart.getContentPane().setBackground(Color.DARK_GRAY);
+		frmAsciiart.setResizable(false);
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBackground(Color.LIGHT_GRAY);
-		GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
+		GroupLayout groupLayout = new GroupLayout(frmAsciiart.getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
@@ -109,12 +118,12 @@ public class MainWindow {
 		lblImageName.setHorizontalAlignment(SwingConstants.CENTER);
 		lblImageName.setBounds(10, 580, 753, 23);
 		panel_1.add(lblImageName);
-		frame.getContentPane().setLayout(groupLayout);
-		frame.setBounds(100, 100, 809, 700);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmAsciiart.getContentPane().setLayout(groupLayout);
+		frmAsciiart.setBounds(100, 100, 875, 718);
+		frmAsciiart.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JMenuBar menuBar = new JMenuBar();
-		frame.setJMenuBar(menuBar);
+		frmAsciiart.setJMenuBar(menuBar);
 		
 		JButton btnLoadImage = new JButton("Wczytaj obraz");
 		menuBar.add(btnLoadImage);
@@ -130,16 +139,34 @@ public class MainWindow {
 		conversion_type = (ConvertType)comboBoxOption1.getSelectedItem();
 		menuBar.add(comboBoxOption1);
 		
+		JSpinner spinCustomWidth = new JSpinner();
+		spinCustomWidth.setPreferredSize(new Dimension(80, 20));
+		spinCustomWidth.setMinimumSize(new Dimension(60, 20));
+		spinCustomWidth.setModel(new SpinnerNumberModel(new Integer(80), new Integer(1), null, new Integer(1)));
+		
 		DefaultComboBoxModel<ScaleType> comboScaleTypeModel = new DefaultComboBoxModel<ScaleType>(option2_list);
 		JComboBox<ScaleType> comboBoxOption2 = new JComboBox<ScaleType>(comboScaleTypeModel);
 		comboBoxOption2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				scale_type = (ScaleType)comboBoxOption2.getSelectedItem();
+				if(scale_type == ScaleType.Custom)
+					spinCustomWidth.setEnabled(true);
+				else
+					spinCustomWidth.setEnabled(false);
 			}
 		});
 		comboBoxOption2.setSelectedIndex(0);
 		scale_type = (ScaleType)comboBoxOption2.getSelectedItem();
 		menuBar.add(comboBoxOption2);
+		
+		spinCustomWidth.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				custom_width = (int)spinCustomWidth.getValue();
+			}
+		});
+		spinCustomWidth.setEnabled(false);
+		custom_width = (int) spinCustomWidth.getValue();
+		menuBar.add(spinCustomWidth);
 		
 		JButton btnSaveImage = new JButton("Zapisz obraz");
 		btnSaveImage.setEnabled(false);
@@ -157,7 +184,9 @@ public class MainWindow {
 		btnSaveImage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(SaveFile())
-					JOptionPane.showMessageDialog(frame, "Plik został zpisany w: \n" + save_path, "Zapis pomyślny", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(frmAsciiart, "Plik został zpisany w: \n" + save_path, "Zapis pomyślny", JOptionPane.INFORMATION_MESSAGE);
+				else
+					JOptionPane.showMessageDialog(frmAsciiart, "Plik nie został zapisany", "Zapis anulowany", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 		
@@ -217,7 +246,7 @@ public class MainWindow {
 			chooser.addChoosableFileFilter(new FileNameExtensionFilter("Text file (*.txt)", "txt"));
 			chooser.setAcceptAllFileFilterUsed(false);
 			
-			int return_val = chooser.showSaveDialog(frame);
+			int return_val = chooser.showSaveDialog(frmAsciiart);
 			if(return_val == JFileChooser.APPROVE_OPTION)
 			{
 				String tmp = chooser.getSelectedFile().getPath();
@@ -230,7 +259,7 @@ public class MainWindow {
 				
 				if(Files.exists(save_path))
 				{
-					int answer = JOptionPane.showConfirmDialog(frame,"Plik o podanej nazwie istnieje.\nCzy chcesz nadpisać plik?","Ostrzeżenie przed nadpisaniem",JOptionPane.YES_NO_OPTION);
+					int answer = JOptionPane.showConfirmDialog(frmAsciiart,"Plik o podanej nazwie istnieje.\nCzy chcesz nadpisać plik?","Ostrzeżenie przed nadpisaniem",JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 					switch (answer) {
 					case JOptionPane.YES_OPTION:
 						break;
@@ -252,7 +281,11 @@ public class MainWindow {
 				else
 					img_to_save = image;
 				
-				img_to_save = ImageConverter.resizeImage(img_to_save, scale_type);
+				if(scale_type != ScaleType.Custom)
+					img_to_save = ImageConverter.resizeImage(img_to_save, scale_type);
+				else
+					img_to_save = ImageConverter.resizeImage(img_to_save, custom_width);
+				
 				intensities = ImageConverter.writeIntensities(img_to_save);
 				
 				char[][] ascii = ImageConverter.intensitiesToAscii(intensities, conversion_type);
@@ -263,22 +296,6 @@ public class MainWindow {
 				
 			return false;
 		}
-	}
-	
-	public BufferedImage pgmToImage(int intensities[][])
-	{
-		int rows = intensities.length;
-		int columns = intensities[0].length;
-		
-		BufferedImage image = new BufferedImage(columns, rows,
-			     BufferedImage.TYPE_BYTE_GRAY);
-		WritableRaster raster = image.getRaster();
-		
-		for (int y = 0; y < rows; y++)
-			for (int x = 0; (x < columns); x++)
-				raster.setSample(x, y, 0, intensities[y][x]);
-		
-		return image;
 	}
 	
 	public boolean displayImageFromFile()
@@ -294,11 +311,11 @@ public class MainWindow {
 			if(intensities == null)
 			{
 				System.out.println("Błąd wczytania obrazu!");
-				JOptionPane.showMessageDialog(frame, "Błąd odczytu pliku PGM!", "Błąd", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(frmAsciiart, "Błąd odczytu pliku PGM!", "Błąd", JOptionPane.ERROR_MESSAGE);
 				return false;
 			}
 			
-			image = pgmToImage(intensities);
+			image = ImageConverter.pgmToImage(intensities);
 			
 			type = true;
 		}
@@ -339,11 +356,11 @@ public class MainWindow {
 				if(intensities == null)
 				{
 					System.out.println("Błąd wczytania obrazu!");
-					JOptionPane.showMessageDialog(frame, "Błąd odczytu pliku PGM!", "Błąd", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(frmAsciiart, "Błąd odczytu pliku PGM!", "Błąd", JOptionPane.ERROR_MESSAGE);
 					return false;
 				}
 				
-				image = pgmToImage(intensities);
+				image = ImageConverter.pgmToImage(intensities);
 				
 				type = true;
 			}

@@ -61,7 +61,6 @@ public class LoadFileWindow extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setModal(true);
 		setTitle("Wczytaj plik z obrazem");
-		setAlwaysOnTop(true);
 		setBounds(100, 100, 589, 234);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBackground(Color.GREEN);
@@ -112,8 +111,7 @@ public class LoadFileWindow extends JDialog {
 		gbc_txtLocalAddress.gridy = 2;
 		contentPanel.add(txtLocalAddress, gbc_txtLocalAddress);
 		txtLocalAddress.setColumns(10);
-	
-	
+
 		JButton btnBrowser = new JButton("Wybierz plik");
 		btnBrowser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -179,7 +177,9 @@ public class LoadFileWindow extends JDialog {
 		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		getContentPane().add(buttonPane, BorderLayout.SOUTH);
 		
+		
 		JButton okButton = new JButton("OK");
+		okButton.setEnabled(true);
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(rdbtnFromFile.isSelected() && !txtLocalAddress.getText().isEmpty())
@@ -211,6 +211,21 @@ public class LoadFileWindow extends JDialog {
 						return;
 					}
 				}
+				else
+				{
+					int answer = JOptionPane.showConfirmDialog(contentPanel,"Nie podano ścieżki do pliku.\nCzy chcesz anulować wczytywanie?","Brak ścieżki",JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+					switch (answer) {
+					case JOptionPane.YES_OPTION:
+						break;
+						
+					case JOptionPane.NO_OPTION:
+						return;
+						
+					case JOptionPane.CLOSED_OPTION:
+						return;
+					}
+				}
+				
 				dispose();
 			}
 		});
@@ -219,7 +234,7 @@ public class LoadFileWindow extends JDialog {
 		getRootPane().setDefaultButton(okButton);
 			
 	
-		JButton cancelButton = new JButton("Cancel");
+		JButton cancelButton = new JButton("Anuluj");
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dispose();

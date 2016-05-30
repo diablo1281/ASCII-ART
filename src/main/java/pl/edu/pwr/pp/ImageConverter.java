@@ -13,7 +13,9 @@ public class ImageConverter {
 
 	public enum ConvertType {
 		Low("Niska"), 
-		High("Wysoka");
+		LowNegativ("Niska (odwrócona)"),
+		High("Wysoka"),
+		HighNegative("Wysoka (odwrócona)");
 		
 		ConvertType(String name) {
 	        try {
@@ -29,7 +31,8 @@ public class ImageConverter {
 		Signs_80("80 znaków"), 
 		Signs_160("160 znaków"),
 		Screen_width("Szerokość ekranu"),
-		Not_scaled("Oryginał (bez skalowania)");
+		Not_scaled("Oryginał (bez skalowania)"),
+		Custom("Niestandardowa szerokość...");
 		
 		ScaleType(String name) {
 	        try {
@@ -60,10 +63,18 @@ public class ImageConverter {
 	 * @return znak odpowiadający zadanemu odcieniowi szarości
 	 */
 	public static char IntToAsciiLow(int intensity) {
+		return INTENSITY_2_ASCII_10.charAt((int)((double) intensity / (double)((double) 256 / (double) INTENSITY_2_ASCII_10.length())));
+	}
+	
+	public static char IntToAsciiLowNegative(int intensity) {
 		return INTENSITY_2_ASCII_10.charAt((INTENSITY_2_ASCII_10.length() - 1) - (int)((double) intensity / (double)((double) 256 / (double) INTENSITY_2_ASCII_10.length())));
 	}
 	
 	public static char IntToAsciiHigh(int intensity) {
+		return INTENSITY_2_ASCII_70.charAt((int)((double) intensity / (double)((double) 256 / (double) INTENSITY_2_ASCII_70.length())));
+	}
+	
+	public static char IntToAsciiHighNegativ(int intensity) {
 		return INTENSITY_2_ASCII_70.charAt((INTENSITY_2_ASCII_70.length() - 1) - (int)((double) intensity / (double)((double) 256 / (double) INTENSITY_2_ASCII_70.length())));
 	}
 
@@ -95,14 +106,44 @@ public class ImageConverter {
 		for(int y = 0; y < rows; y++)
 			for(int x = 0; x < columns; x++)
 			{
-				if(type == ConvertType.Low)
+				switch(type)
+				{
+				case Low:
 					ascii[y][x] = IntToAsciiLow(intensities[y][x]);
-				else
+					break;
+					
+				case High:
 					ascii[y][x] = IntToAsciiHigh(intensities[y][x]);
+					break;
+					
+				case LowNegativ:
+					ascii[y][x] = IntToAsciiLowNegative(intensities[y][x]);
+					break;
+					
+				case HighNegative:
+					ascii[y][x] = IntToAsciiHighNegativ(intensities[y][x]);
+					break;
+				}
 			}
 
 		
 		return ascii;
+	}
+	
+	public static BufferedImage pgmToImage(int intensities[][])
+	{
+		int rows = intensities.length;
+		int columns = intensities[0].length;
+		
+		BufferedImage image = new BufferedImage(columns, rows,
+			     BufferedImage.TYPE_BYTE_GRAY);
+		WritableRaster raster = image.getRaster();
+		
+		for (int y = 0; y < rows; y++)
+			for (int x = 0; (x < columns); x++)
+				raster.setSample(x, y, 0, intensities[y][x]);
+		
+		return image;
 	}
 	
 	public static BufferedImage convertFromRGBToGrey(BufferedImage image)
@@ -177,6 +218,16 @@ public class ImageConverter {
 		return result;
 	}
 	
+	public static BufferedImage resizeImage(BufferedImage image, int width)
+	{
+		BufferedImage result = null;
+		double org_ratio = (double) image.getHeight() /  (double) image.getWidth();
+		int heigth = (int)(org_ratio * (double) width);
+		
+		result = resizeImage(image, width, heigth);
+		
+		return result;
+	}
 	public static int[][] writeIntensities(BufferedImage image)
 	{
 		int[][] intensities = null;
