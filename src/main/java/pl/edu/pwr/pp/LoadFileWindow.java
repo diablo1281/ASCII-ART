@@ -37,7 +37,7 @@ public class LoadFileWindow extends JDialog {
 	/**
 	 * 
 	 */
-	//Dodane aby usunąć warning
+	// Dodane aby usunąć warning
 	private static final long serialVersionUID = 1L;
 	/**
 	 * 
@@ -56,7 +56,7 @@ public class LoadFileWindow extends JDialog {
 		path = null;
 		path_is_url = false;
 		last_path = given_path;
-		
+
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setModal(true);
@@ -67,12 +67,12 @@ public class LoadFileWindow extends JDialog {
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
-		gbl_contentPanel.columnWidths = new int[]{0, 0, 0};
-		gbl_contentPanel.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
-		gbl_contentPanel.columnWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
-		gbl_contentPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_contentPanel.columnWidths = new int[] { 0, 0, 0 };
+		gbl_contentPanel.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0 };
+		gbl_contentPanel.columnWeights = new double[] { 1.0, 0.0, Double.MIN_VALUE };
+		gbl_contentPanel.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		contentPanel.setLayout(gbl_contentPanel);
-		
+
 		JLabel lblWczytaj = new JLabel("Wczytaj plik");
 		lblWczytaj.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		GridBagConstraints gbc_lblWczytaj = new GridBagConstraints();
@@ -81,8 +81,7 @@ public class LoadFileWindow extends JDialog {
 		gbc_lblWczytaj.gridx = 0;
 		gbc_lblWczytaj.gridy = 0;
 		contentPanel.add(lblWczytaj, gbc_lblWczytaj);
-	
-	
+
 		JRadioButton rdbtnFromFile = new JRadioButton("z dysku lokalnego");
 		rdbtnFromFile.setBackground(Color.GREEN);
 		rdbtnFromFile.setSelected(true);
@@ -93,8 +92,7 @@ public class LoadFileWindow extends JDialog {
 		gbc_rdbtnFromFile.gridx = 0;
 		gbc_rdbtnFromFile.gridy = 1;
 		contentPanel.add(rdbtnFromFile, gbc_rdbtnFromFile);
-	
-	
+
 		txtLocalAddress = new JTextField();
 		txtLocalAddress.addMouseListener(new MouseAdapter() {
 			@Override
@@ -113,37 +111,34 @@ public class LoadFileWindow extends JDialog {
 		txtLocalAddress.setColumns(10);
 
 		JButton btnBrowser = new JButton("Wybierz plik");
-		btnBrowser.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JFileChooser chooser = new JFileChooser();
-				Component source =(Component) e.getSource();
-				
-				if(last_path != null)
-					chooser.setCurrentDirectory(last_path.toFile());
-				
-				chooser.addChoosableFileFilter(new FileNameExtensionFilter("PGM images (*.pgm)", "pgm"));
-				chooser.addChoosableFileFilter(new FileNameExtensionFilter("All other images (*.jpg, *.png, *.bmp, *.gif)", "jpg", "png", "bmp", "gif"));
-				chooser.setAcceptAllFileFilterUsed(false);
-				
-				int return_val = chooser.showOpenDialog(source.getParent());
-				if(return_val == JFileChooser.APPROVE_OPTION)
-				{
-					File f = chooser.getSelectedFile();
-					txtLocalAddress.setText(f.getAbsolutePath());
-					rdbtnFromFile.setSelected(true);
-					last_path = chooser.getCurrentDirectory().toPath();
-				}
-				
+		btnBrowser.addActionListener(e -> {
+			JFileChooser chooser = new JFileChooser();
+			Component source = (Component) e.getSource();
+
+			if (last_path != null)
+				chooser.setCurrentDirectory(last_path.toFile());
+
+			chooser.addChoosableFileFilter(new FileNameExtensionFilter("PGM images (*.pgm)", "pgm"));
+			chooser.addChoosableFileFilter(new FileNameExtensionFilter("All other images (*.jpg, *.png, *.bmp, *.gif)",
+					"jpg", "png", "bmp", "gif"));
+			chooser.setAcceptAllFileFilterUsed(false);
+
+			int return_val = chooser.showOpenDialog(source.getParent());
+			if (return_val == JFileChooser.APPROVE_OPTION) {
+				File f = chooser.getSelectedFile();
+				txtLocalAddress.setText(f.getAbsolutePath());
+				rdbtnFromFile.setSelected(true);
+				last_path = chooser.getCurrentDirectory().toPath();
 			}
 		});
+
 		btnBrowser.setToolTipText("Wybierz plik zdjęcia do załadowania");
 		GridBagConstraints gbc_btnBrowser = new GridBagConstraints();
 		gbc_btnBrowser.insets = new Insets(0, 0, 5, 0);
 		gbc_btnBrowser.gridx = 1;
 		gbc_btnBrowser.gridy = 2;
 		contentPanel.add(btnBrowser, gbc_btnBrowser);
-	
-	
+
 		JRadioButton rdbtnLoadURL = new JRadioButton("z adresu URL");
 		rdbtnLoadURL.setBackground(Color.GREEN);
 		GridBagConstraints gbc_rdbtnLoadURL = new GridBagConstraints();
@@ -152,8 +147,7 @@ public class LoadFileWindow extends JDialog {
 		gbc_rdbtnLoadURL.gridx = 0;
 		gbc_rdbtnLoadURL.gridy = 4;
 		contentPanel.add(rdbtnLoadURL, gbc_rdbtnLoadURL);
-		
-		
+
 		txtUrlAddress = new JTextField();
 		txtUrlAddress.addMouseListener(new MouseAdapter() {
 			@Override
@@ -170,70 +164,60 @@ public class LoadFileWindow extends JDialog {
 		gbc_txtUrlAddress.gridy = 5;
 		contentPanel.add(txtUrlAddress, gbc_txtUrlAddress);
 		txtUrlAddress.setColumns(10);
-		
-		
+
 		JPanel buttonPane = new JPanel();
 		buttonPane.setBackground(Color.GREEN);
 		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		getContentPane().add(buttonPane, BorderLayout.SOUTH);
-		
-		
+
 		JButton okButton = new JButton("OK");
 		okButton.setEnabled(true);
-		okButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if(rdbtnFromFile.isSelected() && !txtLocalAddress.getText().isEmpty())
-				{
-					path = txtLocalAddress.getText();
-					path_is_url = false;
+		okButton.addActionListener(e -> {
+			if (rdbtnFromFile.isSelected() && !txtLocalAddress.getText().isEmpty()) {
+				path = txtLocalAddress.getText();
+				path_is_url = false;
+			} else if (rdbtnLoadURL.isSelected() && !txtUrlAddress.getText().isEmpty()) {
+				int code = -1;
+				try {
+					URL url = new URL(txtUrlAddress.getText());
+					HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();
+					urlConn.connect();
+					code = urlConn.getResponseCode();
+				} catch (IOException ex) {
+					ex.printStackTrace();
 				}
-				else if(rdbtnLoadURL.isSelected() && !txtUrlAddress.getText().isEmpty())
-				{
-					int code = -1;
-					try {
-						URL url = new URL(txtUrlAddress.getText());
-						HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();
-				        urlConn.connect();
-				        code = urlConn.getResponseCode();
-				    } catch (IOException ex) {
-				        ex.printStackTrace();
-				    }
-					
-					if(code == HttpURLConnection.HTTP_OK)
-					{
-						path = txtUrlAddress.getText();
-						path_is_url = true;
-					}
-					else
-					{
-						Component source =(Component) e.getSource();
-						JOptionPane.showMessageDialog(source.getParent(), "Podany adres URL jest nieprawidłowy!", "Błąd", JOptionPane.ERROR_MESSAGE);
-						return;
-					}
+
+				if (code == HttpURLConnection.HTTP_OK) {
+					path = txtUrlAddress.getText();
+					path_is_url = true;
+				} else {
+					Component source = (Component) e.getSource();
+					JOptionPane.showMessageDialog(source.getParent(), "Podany adres URL jest nieprawidłowy!", "Błąd",
+							JOptionPane.ERROR_MESSAGE);
+					return;
 				}
-				else
-				{
-					int answer = JOptionPane.showConfirmDialog(contentPanel,"Nie podano ścieżki do pliku.\nCzy chcesz anulować wczytywanie?","Brak ścieżki",JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-					switch (answer) {
-					case JOptionPane.YES_OPTION:
-						break;
-						
-					case JOptionPane.NO_OPTION:
-						return;
-						
-					case JOptionPane.CLOSED_OPTION:
-						return;
-					}
+			} else {
+				int answer = JOptionPane.showConfirmDialog(contentPanel,
+						"Nie podano ścieżki do pliku.\nCzy chcesz anulować wczytywanie?", "Brak ścieżki",
+						JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+				switch (answer) {
+				case JOptionPane.YES_OPTION:
+					break;
+
+				case JOptionPane.NO_OPTION:
+					return;
+
+				case JOptionPane.CLOSED_OPTION:
+					return;
 				}
-				
-				dispose();
 			}
+
+			dispose();
 		});
 		okButton.setActionCommand("OK");
 		buttonPane.add(okButton);
 		getRootPane().setDefaultButton(okButton);
-			
-	
+
 		JButton cancelButton = new JButton("Anuluj");
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -242,24 +226,21 @@ public class LoadFileWindow extends JDialog {
 		});
 		cancelButton.setActionCommand("Cancel");
 		buttonPane.add(cancelButton);
-			
+
 		ButtonGroup radioBtnGroup = new ButtonGroup();
 		radioBtnGroup.add(rdbtnFromFile);
 		radioBtnGroup.add(rdbtnLoadURL);
 	}
-	
-	public String getPath()
-	{
+
+	public String getPath() {
 		return path;
 	}
-	
-	public Path getLastPath()
-	{
+
+	public Path getLastPath() {
 		return last_path;
 	}
-	
-	public boolean getPathType()
-	{
+
+	public boolean getPathType() {
 		return path_is_url;
 	}
 }

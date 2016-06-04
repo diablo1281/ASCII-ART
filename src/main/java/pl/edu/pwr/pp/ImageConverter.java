@@ -8,6 +8,7 @@ import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.lang.reflect.Field;
+import java.util.stream.IntStream;
 
 public class ImageConverter {
 
@@ -103,8 +104,8 @@ public class ImageConverter {
 			ascii[i] = new char[columns];
 		}
 		
-		for(int y = 0; y < rows; y++)
-			for(int x = 0; x < columns; x++)
+		IntStream.range(0, rows).forEach(y ->
+			IntStream.range(0, columns).forEach(x ->
 			{
 				switch(type)
 				{
@@ -125,6 +126,7 @@ public class ImageConverter {
 					break;
 				}
 			}
+		));
 
 		
 		return ascii;
@@ -228,6 +230,7 @@ public class ImageConverter {
 		
 		return result;
 	}
+	
 	public static int[][] writeIntensities(BufferedImage image)
 	{
 		int[][] intensities = null;
