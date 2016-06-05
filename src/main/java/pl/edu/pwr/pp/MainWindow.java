@@ -12,6 +12,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import pl.edu.pwr.pp.ImageConverter.ConvertType;
 import pl.edu.pwr.pp.ImageConverter.ScaleType;
+import pl.edu.pwr.pp.ImageFileWriter.SaveType;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -31,12 +32,14 @@ public class MainWindow {
 	private Path last_path;
 	private ConvertType conversion_type;
 	private ScaleType scale_type;
+	private SaveType save_type;
 	private int custom_width;
 
-	private ConvertType[] option1_list = { ConvertType.Low, ConvertType.LowNegativ, ConvertType.High,
+	private ConvertType[] option1_list = { ConvertType.Low, ConvertType.LowNegative, ConvertType.High,
 			ConvertType.HighNegative };
 	private ScaleType[] option2_list = { ScaleType.Signs_80, ScaleType.Signs_160, ScaleType.Screen_width,
 			ScaleType.Not_scaled, ScaleType.Custom };
+	private SaveType[] option_save_list = { SaveType.Txt, SaveType.Img };
 
 	/**
 	 * Launch the application.
@@ -156,17 +159,18 @@ public class MainWindow {
 		custom_width = (int) spinCustomWidth.getValue();
 		menuBar.add(spinCustomWidth);
 
-		JButton btnSaveImage = new JButton("Zapisz obraz");
+		JButton btnSaveImage = new JButton("Zapisz obraz do:");
 		btnSaveImage.setEnabled(false);
 		menuBar.add(btnSaveImage);
 
-		JButton btnFunction1 = new JButton("(Reserve)");
-		btnFunction1.setEnabled(false);
-		menuBar.add(btnFunction1);
-
-		JButton btnFunction2 = new JButton("(Reserve)");
-		btnFunction2.setEnabled(false);
-		menuBar.add(btnFunction2);
+		DefaultComboBoxModel<SaveType> comboSaveTypeModel = new DefaultComboBoxModel<SaveType>(option_save_list);
+		JComboBox<SaveType> comboBoxSaveOption = new JComboBox<SaveType>(comboSaveTypeModel);
+		comboBoxSaveOption.addActionListener(e -> {
+			save_type = (SaveType) comboBoxSaveOption.getSelectedItem();
+		});
+		comboBoxSaveOption.setSelectedIndex(0);
+		save_type = (SaveType) comboBoxSaveOption.getSelectedItem();
+		menuBar.add(comboBoxSaveOption);
 
 		// Zapisz obraz
 		btnSaveImage.addActionListener(e -> {
@@ -224,8 +228,12 @@ public class MainWindow {
 			if (last_path != null)
 				chooser.setCurrentDirectory(last_path.toFile());
 
-			chooser.setFileFilter(new FileNameExtensionFilter("ASCII_ART (*.nfo)", "nfo"));
-			chooser.addChoosableFileFilter(new FileNameExtensionFilter("Text file (*.txt)", "txt"));
+			if (save_type == SaveType.Txt) {
+				chooser.setFileFilter(new FileNameExtensionFilter("ASCII_ART (*.nfo)", "nfo"));
+				chooser.addChoosableFileFilter(new FileNameExtensionFilter("Text file (*.txt)", "txt"));
+			} else if (save_type == SaveType.Img) {
+				chooser.setFileFilter(new FileNameExtensionFilter("JPG (*.jpg)", "jpg"));
+			}
 			chooser.setAcceptAllFileFilterUsed(false);
 
 			int return_val = chooser.showSaveDialog(frmAsciiart);
@@ -254,6 +262,8 @@ public class MainWindow {
 					}
 				}
 
+				System.out.println("Converting image to ASCII...");
+
 				ImageFileWriter imageWriter = new ImageFileWriter();
 				BufferedImage img_to_save;
 
@@ -270,7 +280,14 @@ public class MainWindow {
 				intensities = ImageConverter.writeIntensities(img_to_save);
 
 				char[][] ascii = ImageConverter.intensitiesToAscii(intensities, conversion_type);
-				imageWriter.saveToTxtFile(ascii, save_path);
+
+				if (save_type == SaveType.Txt) {
+					imageWriter.saveToTxtFile(ascii, save_path);
+				} else if (save_type == SaveType.Img) {
+					imageWriter.saveToImgFile(ascii, save_path);
+				}
+
+				System.out.println("Done!");
 
 				return true;
 			}

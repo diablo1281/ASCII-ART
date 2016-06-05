@@ -3,22 +3,22 @@ package pl.edu.pwr.pp;
 import java.net.URISyntaxException;
 
 import pl.edu.pwr.pp.ImageConverter.ConvertType;
+import pl.edu.pwr.pp.ImageFileWriter.SaveType;
 
 public class AsciiArtApplication {
 
 	public static void main(String[] args) {
-		
+
 		System.out.println("Program start...");
 		System.out.println();
 
-		
-		String[] images = new String[]{"Marilyn_Monroe", "Mona_Lisa", "Sierpinski_Triangle"};
+		String[] images = new String[] { "Marilyn_Monroe", "Mona_Lisa", "Sierpinski_Triangle" };
 		String pgmExtension = ".pgm";
 		String txtExtension = ".txt";
-		
-		ImageFileReader imageFileReader = new ImageFileReader(); 
+
+		ImageFileReader imageFileReader = new ImageFileReader();
 		ImageFileWriter imageFileWriter = new ImageFileWriter();
-		
+
 		for (String imageName : images) {
 			try {
 				// przeczytaj plik pgm
@@ -30,13 +30,13 @@ public class AsciiArtApplication {
 				// zapisz ASCII art do pliku tekstowego
 				System.out.println("Zapis pliku: " + imageName);
 				imageFileWriter.saveToTxtFile(ascii, imageName + txtExtension);
-				
+
 				System.out.println();
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
-			} 
+			}
 		}
-		
+
 		System.out.println("DONE");
 	}
 }
