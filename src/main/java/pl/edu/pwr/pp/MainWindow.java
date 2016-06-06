@@ -170,6 +170,7 @@ public class MainWindow {
 		});
 		comboBoxSaveOption.setSelectedIndex(0);
 		save_type = (SaveType) comboBoxSaveOption.getSelectedItem();
+		comboBoxSaveOption.setEnabled(false);
 		menuBar.add(comboBoxSaveOption);
 
 		// Zapisz obraz
@@ -198,6 +199,7 @@ public class MainWindow {
 				lblImageName.setText(filename);
 
 				btnSaveImage.setEnabled(true);
+				comboBoxSaveOption.setEnabled(true);
 			}
 		});
 	}
